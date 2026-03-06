@@ -51,6 +51,7 @@ seaborn
 tqdm
 pyyaml
 python-dotenv
+pymongo
 
 # Missing dependencies for audio model
 webrtcvad
