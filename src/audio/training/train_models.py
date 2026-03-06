@@ -10,7 +10,10 @@ from sklearn.model_selection import train_test_split, cross_val_score, Stratifie
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score, f1_score, precision_score, recall_score,
+    roc_auc_score, classification_report, confusion_matrix
+)
 import xgboost as xgb
 import lightgbm as lgb
 
@@ -132,7 +135,7 @@ def train_and_evaluate(input_csv, output_model_dir, eval_dir):
     y_test_mapped = np.array([label_mapping[val] for val in y_test])
     
     best_model_name = None
-    best_accuracy = 0
+    best_f1 = 0
     best_model = None
     
     # 5-Fold Cross validation setup
@@ -142,21 +145,43 @@ def train_and_evaluate(input_csv, output_model_dir, eval_dir):
     for name, model in models.items():
         print(f"\n{'='*50}\nTraining {name}...\n{'='*50}")
         
-        # Cross Validation
-        cv_scores = cross_val_score(model, X_train_scaled, y_train_mapped, cv=cv, scoring='accuracy', n_jobs=-1)
-        print(f"5-Fold CV Accuracy: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
+        # Cross Validation — primary metric is F1-weighted
+        cv_scores = cross_val_score(model, X_train_scaled, y_train_mapped, cv=cv, scoring='f1_weighted', n_jobs=-1)
+        print(f"5-Fold CV F1 (weighted): {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
         
         # Fit on full 80% train set
         model.fit(X_train_scaled, y_train_mapped)
         
         # Evaluate on 20% test set
-        y_pred = model.predict(X_test_scaled)
+        y_pred   = model.predict(X_test_scaled)
         test_acc = accuracy_score(y_test_mapped, y_pred)
-        
-        print(f"Test Set Accuracy: {test_acc:.4f}\n")
+        test_f1  = f1_score(y_test_mapped, y_pred, average='weighted')
+        test_pre = precision_score(y_test_mapped, y_pred, average='weighted', zero_division=0)
+        test_rec = recall_score(y_test_mapped, y_pred, average='weighted', zero_division=0)
+
+        # AUC-ROC (needs probability estimates)
+        if hasattr(model, "predict_proba"):
+            y_prob    = model.predict_proba(X_test_scaled)
+            n_classes = len(np.unique(y_test_mapped))
+            if n_classes == 2:
+                auc = roc_auc_score(y_test_mapped, y_prob[:, 1])
+            else:
+                auc = roc_auc_score(y_test_mapped, y_prob, multi_class='ovr', average='weighted')
+        else:
+            auc = float('nan')
+
+        # Rich metrics summary
+        print(f"""
+  Model: {name}
+  ├── Accuracy  : {test_acc:.4f}
+  ├── F1 Score  : {test_f1:.4f}   ← primary metric
+  ├── Precision : {test_pre:.4f}
+  ├── Recall    : {test_rec:.4f}
+  └── AUC-ROC   : {auc:.4f}
+""")
         print("Classification Report:")
         print(classification_report(y_test_mapped, y_pred, target_names=[str(l) for l in UNIQUE_LABELS]))
-        
+
         # Confusion Matrix
         cm = confusion_matrix(y_test_mapped, y_pred)
         plt.figure(figsize=(8, 6))
@@ -169,8 +194,8 @@ def train_and_evaluate(input_csv, output_model_dir, eval_dir):
         plt.close()
         
         # Keep track of best model
-        if test_acc > best_accuracy:
-            best_accuracy = test_acc
+        if test_f1 > best_f1:
+            best_f1 = test_f1
             best_model_name = name
             best_model = model
             
@@ -180,7 +205,7 @@ def train_and_evaluate(input_csv, output_model_dir, eval_dir):
             
     # 5. Save best model
     print(f"\n{'*'*50}")
-    print(f"Best Model: {best_model_name} with Accuracy {best_accuracy:.4f}")
+    print(f"Best Model: {best_model_name} with F1 Score {best_f1:.4f}")
     
     model_path = out_dir / "best_audio_model.joblib"
     # Also save the label mapping so inference knows what 0,1,2,3 means

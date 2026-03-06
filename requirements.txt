@@ -54,7 +54,7 @@ python-dotenv
 pymongo
 
 # Missing dependencies for audio model
-webrtcvad
+webrtcvad-wheels
 praat-parselmouth
 lightgbm
 imbalanced-learn
