@@ -1,2 +1,11 @@
-.venv
-.env    
+# Virtual environment
+.venv/
+
+# Environment variables
+.env
+
+# Folders
+
+models/
+outputs/
+logs/
