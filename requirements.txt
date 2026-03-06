@@ -51,3 +51,9 @@ seaborn
 tqdm
 pyyaml
 python-dotenv
+
+# Missing dependencies for audio model
+webrtcvad
+praat-parselmouth
+lightgbm
+imbalanced-learn

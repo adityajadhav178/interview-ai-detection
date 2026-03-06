@@ -1,0 +1,90 @@
+{
+  "depression": [
+    {
+      "id": 1,
+      "question": "Describe a recent situation that made you feel overwhelmed or hopeless."
+    },
+    {
+      "id": 2,
+      "question": "How has your energy level affected your daily routine?"
+    },
+    {
+      "id": 3,
+      "question": "Describe any changes you have noticed in your sleep or eating patterns."
+    },
+    {
+      "id": 4,
+      "question": "How have these feelings affected your relationships or responsibilities?"
+    },
+    {
+      "id": 5,
+      "question": "Describe how your energy levels and motivation have changed recently."
+    }
+  ],
+  "anxiety": [
+    {
+      "id": 1,
+      "question": "Describe the types of things you worry about most in your daily life."
+    },
+    {
+      "id": 2,
+      "question": "How does worry affect your ability to relax or enjoy free time?"
+    },
+    {
+      "id": 3,
+      "question": "What situations or places do you avoid because of anxiety?"
+    },
+    {
+      "id": 4,
+      "question": "Describe how anxiety affects your decision-making or confidence."
+    },
+    {
+      "id": 5,
+      "question": "Describe how long your anxious thoughts usually last and how you cope with them."
+    }
+  ],
+  "stress": [
+    {
+      "id": 1,
+      "question": "Describe thoughts that repeatedly enter your mind even when you try to ignore them."
+    },
+    {
+      "id": 2,
+      "question": "Explain any repetitive behaviors you perform to reduce discomfort or anxiety."
+    },
+    {
+      "id": 3,
+      "question": "How do you feel if you are unable to complete a routine or ritual?"
+    },
+    {
+      "id": 4,
+      "question": "Describe how these thoughts or behaviors affect your daily functioning."
+    },
+    {
+      "id": 5,
+      "question": "How much control do you feel you have over these thoughts or actions?"
+    }
+  ],
+  "ptsd": [
+    {
+      "id": 1,
+      "question": "Describe how you usually manage tasks that require planning and multiple steps. What challenges do you face?"
+    },
+    {
+      "id": 2,
+      "question": "When you have deadlines, how do you typically start and complete your work?"
+    },
+    {
+      "id": 3,
+      "question": "Explain how distractions (noise, people, notifications) affect your daily activities."
+    },
+    {
+      "id": 4,
+      "question": "Describe situations where you feel physically restless or mentally overactive."
+    },
+    {
+      "id": 5,
+      "question": "How do attention or organization difficulties impact your studies, work, or relationships?"
+    }
+  ]
+}
