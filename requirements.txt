@@ -1,0 +1,53 @@
+# Core
+numpy
+pandas
+scipy
+
+# Machine Learning
+scikit-learn
+xgboost
+joblib
+
+# Deep Learning
+torch
+torchvision
+torchaudio
+transformers
+
+# Dimensionality Reduction
+umap-learn
+
+# Audio Processing
+librosa
+soundfile
+pydub
+noisereduce
+
+# Video Processing
+opencv-python
+mediapipe
+moviepy
+imageio
+imageio-ffmpeg
+
+# Face / Emotion Detection
+deepface
+fer
+
+# NLP
+nltk
+spacy
+textblob
+vaderSentiment
+
+# Speech-to-text
+openai-whisper
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
+tqdm
+pyyaml
+python-dotenv

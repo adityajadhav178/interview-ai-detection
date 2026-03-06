@@ -1,0 +1,14 @@
+modality: audio
+data:
+  raw_dir: data/raw/audio
+  processed_dir: data/processed/audio
+training:
+  seed: 42
+  batch_size: 16
+  num_epochs: 10
+  learning_rate: 0.0003
+model:
+  name: baseline_audio_mlp
+  input_dim: 128
+  hidden_dim: 256
+  num_classes: 2
