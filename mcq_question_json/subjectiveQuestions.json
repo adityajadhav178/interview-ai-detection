@@ -43,7 +43,7 @@
       "question": "Describe how long your anxious thoughts usually last and how you cope with them."
     }
   ],
-  "stress": [
+  "ocd": [
     {
       "id": 1,
       "question": "Describe thoughts that repeatedly enter your mind even when you try to ignore them."
@@ -65,7 +65,7 @@
       "question": "How much control do you feel you have over these thoughts or actions?"
     }
   ],
-  "ptsd": [
+  "adhd": [
     {
       "id": 1,
       "question": "Describe how you usually manage tasks that require planning and multiple steps. What challenges do you face?"
