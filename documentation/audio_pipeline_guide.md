@@ -104,13 +104,15 @@ Each file goes through this pipeline in order:
 
 Extracts exactly **20 features** per audio file:
 
-| Category | Feature | Count |
-|----------|---------|-------|
-| MFCC | mfcc_mean, mfcc_std, delta_mfcc_mean, delta_mfcc_std, delta2_mfcc_mean, delta2_mfcc_std | 6 |
-| Pitch | pitch_mean, pitch_std, pitch_min, pitch_max | 4 |
-| Energy | energy_mean, energy_std, energy_min, rms_energy | 4 |
-| Speech Patterns | speech_rate, pause_duration_mean, pause_frequency, zero_crossing_rate_mean | 4 |
-| Voice Quality | jitter, shimmer (via Praat/parselmouth) | 2 |
+| Category | Feature | Count | Library |
+|----------|---------|-------|--------|
+| MFCC | mfcc_mean, mfcc_std, delta_mfcc_mean, delta_mfcc_std, delta2_mfcc_mean, delta2_mfcc_std | 6 | librosa |
+| Pitch | pitch_mean, pitch_std, pitch_min, pitch_max | 4 | **Parselmouth (Praat F0)** |
+| Energy | energy_mean, energy_std, energy_min, rms_energy | 4 | librosa |
+| Speech Patterns | speech_rate, pause_duration_mean, pause_frequency, zero_crossing_rate_mean | 4 | librosa / scipy |
+| Voice Quality | jitter, shimmer | 2 | Parselmouth (Praat) |
+
+> **Pitch note:** Pitch is extracted using `parselmouth.Sound.to_pitch()` (Praat's autocorrelation-based F0), which is more accurate for clinical speech than `librosa.piptrack`. Unvoiced frames (0 Hz) are filtered out automatically.
 
 ---
 
@@ -167,8 +169,22 @@ python src/audio/training/train_models.py \
     --eval_dir evaluation/audio
 ```
 
+**Primary metric: F1-weighted** (more reliable than accuracy for imbalanced mental health data).
+
+For each model, training prints:
+```
+  Model: Random Forest
+  ├── Accuracy  : 0.82
+  ├── F1 Score  : 0.79   ← primary metric
+  ├── Precision : 0.81
+  ├── Recall    : 0.77
+  └── AUC-ROC   : 0.85
+```
+
+**Model selection:** The model with the **highest F1 score** is saved as the best model.
+
 **Outputs:**
-- `models/audio/best_audio_model.joblib` — Best model saved automatically.
+- `models/audio/best_audio_model.joblib` — Best model (selected by F1).
 - `models/audio/standard_scaler.joblib` — Scaler for inference.
 - `evaluation/audio/` — Confusion matrices and feature importance plots per model.
 
@@ -205,15 +221,15 @@ Confidence Scores:
 
 ### ⚠️ Feature Concerns
 
-- **MFCC features are over-compressed**: The current pipeline collapses all 13 MFCC coefficients into a single mean/std. Standard practice is to keep per-coefficient statistics (13 means + 13 stds = 26 features just for MFCC). This means the model loses spectral detail.
-- **Pitch via `piptrack` is noisy**: `librosa.piptrack` is known to produce inaccurate pitch for speech. Parselmouth (already used for jitter/shimmer) would give more reliable fundamental frequency (F0) estimates.
-- **Speech Rate is approximate**: The current "syllable rate" uses RMS energy peaks, not true phoneme/syllable boundary detection. This is a rough proxy.
+- **MFCC features are over-compressed**: Collapses all 13 coefficients into a single mean/std. Per-coefficient stats (26 features) would preserve more spectral detail.
+- ~~**Pitch via `piptrack` is noisy**~~ ✅ **Fixed** — Now uses `parselmouth.to_pitch()` (Praat F0) for accurate clinical-grade pitch.
+- **Speech Rate is approximate**: Uses RMS energy peaks as a proxy for syllable rate — not true phoneme boundary detection.
 
 ### ⚠️ Training Concerns
 
-- **No hyperparameter tuning**: All models use default parameters. Real performance will be higher after tuning.
-- **Model selection by accuracy only**: Accuracy is misleading for imbalanced classes. Use **F1-score** or **AUC-ROC** to select the best model instead.
-- **SMOTE on high-dimensional 100-feature space**: SMOTE can introduce artificial noise; consider alternatives like `ADASYN` or simply `class_weight='balanced'` for small datasets.
+- **No hyperparameter tuning**: All models use default parameters.
+- ~~**Model selection by accuracy only**~~ ✅ **Fixed** — Now uses **F1-weighted** as the primary metric with full Precision, Recall, and AUC-ROC reporting.
+- **SMOTE on high-dimensional data**: Can introduce noise; consider `class_weight='balanced'` for very small datasets.
 
 ### ⚠️ Data Concerns
 
@@ -223,7 +239,8 @@ Confidence Scores:
 ### ✅ What is Done Well
 
 - Solid preprocessing pipeline (VAD + noise reduction + normalization).
-- Parselmouth integration for Jitter/Shimmer (clinically validated voice quality markers).
+- Parselmouth used for both Pitch (F0) and Jitter/Shimmer — clinically validated.
+- **F1-weighted** is the primary evaluation metric with full Accuracy/Precision/Recall/AUC-ROC reporting.
 - Modular, clean code structure — easy to extend.
 - Folder-based labelling — no CSV management overhead.
 - SMOTE + class weight support for imbalanced data.
@@ -232,8 +249,8 @@ Confidence Scores:
 
 ## Recommended Next Steps
 
-1. **Expand MFCC features** — Extract per-coefficient mean/std for all 13 MFCCs (adds 20 more features but much richer).
-2. **Replace `piptrack` pitch with Parselmouth F0** — Much more accurate for clinical speech.
-3. **Add F1/AUC-ROC** as primary evaluation metric in `train_models.py`.
+1. **Expand MFCC features** — Extract per-coefficient mean/std for all 13 MFCCs (26 features total instead of 6).
+2. ~~**Replace `piptrack` pitch with Parselmouth F0**~~ ✅ Done.
+3. ~~**Add F1/AUC-ROC as primary metric**~~ ✅ Done.
 4. **Hyperparameter tuning** — Use `GridSearchCV` or `Optuna` for XGBoost/LightGBM.
 5. **Binary classification mode** — Train one model per condition (e.g., Depression vs. All) for higher per-condition accuracy.

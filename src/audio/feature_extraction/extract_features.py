@@ -37,28 +37,32 @@ def extract_audio_features(audio_array, sample_rate=16000):
     features["delta_delta_mfcc_std"] = np.std(delta2_mfccs)
     
     # --- 2. Pitch (4 features) ---
-    # Using librosa piptrack to estimate pitch
-    pitches, magnitudes = librosa.piptrack(y=audio_array, sr=sample_rate)
-    
-    # Extract only valid positive pitches based on magnitude threshold
-    pitch_values = []
-    for t in range(pitches.shape[1]):
-        index = magnitudes[:, t].argmax()
-        pitch = pitches[index, t]
-        if pitch > 0:
-            pitch_values.append(pitch)
-            
-    if pitch_values:
-        features["pitch_mean"] = np.mean(pitch_values)
-        features["pitch_std"] = np.std(pitch_values)
-        features["pitch_min"] = np.min(pitch_values)
-        features["pitch_max"] = np.max(pitch_values)
-    else:
-        # Fallback if no specific pitch is detected
+    # Using Parselmouth (Praat) for accurate clinical-grade pitch (F0) extraction.
+    # This is more reliable than librosa.piptrack for speech signals.
+    try:
+        snd_pitch = parselmouth.Sound(audio_array, sample_rate)
+        pitch_obj = snd_pitch.to_pitch()
+        # Get frequency values for all frames; unvoiced frames = 0.0
+        pitch_values_raw = pitch_obj.selected_array['frequency']
+        # Filter out zero (unvoiced) values
+        pitch_values = pitch_values_raw[pitch_values_raw > 0]
+
+        if len(pitch_values) > 0:
+            features["pitch_mean"] = float(np.mean(pitch_values))
+            features["pitch_std"]  = float(np.std(pitch_values))
+            features["pitch_min"]  = float(np.min(pitch_values))
+            features["pitch_max"]  = float(np.max(pitch_values))
+        else:
+            features["pitch_mean"] = 0.0
+            features["pitch_std"]  = 0.0
+            features["pitch_min"]  = 0.0
+            features["pitch_max"]  = 0.0
+    except Exception as e:
+        print(f"Warning: Failed to extract Parselmouth pitch: {e}")
         features["pitch_mean"] = 0.0
-        features["pitch_std"] = 0.0
-        features["pitch_min"] = 0.0
-        features["pitch_max"] = 0.0
+        features["pitch_std"]  = 0.0
+        features["pitch_min"]  = 0.0
+        features["pitch_max"]  = 0.0
         
     # --- 3. Energy (4 features) ---
     # Using RMS energy per frame
