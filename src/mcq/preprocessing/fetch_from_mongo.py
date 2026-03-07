@@ -105,18 +105,62 @@ def save_dataset(
     question_ids: list[int],
     output_path: Path,
 ) -> Path:
+    """Save per-disease dataset (legacy, used when --disease is specified)."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Only question columns
     columns = [f"q{qid}" for qid in question_ids] + ["label"]
-
     df = pd.DataFrame(rows, columns=columns)
     df.to_csv(output_path, index=False)
     return output_path
 
+
+def save_unified_dataset(
+    rows: list[tuple[list[int], str]],
+    question_ids: list[int],
+    disease_names: list[str],
+    output_path: Path,
+    include_label: bool = True,
+) -> Path:
+    """Save unified CSV with q1..qN + one-hot disease columns (+ optional label).
+
+    Each row: (feature_vector, disease_name) or (feature_vector, disease_name, label).
+    One-hot cols: 1 if row's disease matches, else 0.
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [f"q{qid}" for qid in question_ids] + list(disease_names)
+    if include_label and rows and len(rows[0]) == 3:
+        columns = columns + ["label"]
+
+    data: list[list[int | str]] = []
+    for row_tuple in rows:
+        if len(row_tuple) == 3:
+            vec, disease, label = row_tuple
+        else:
+            vec, disease = row_tuple
+            label = None
+        one_hot = [1 if d == disease else 0 for d in disease_names]
+        row = vec + one_hot
+        if include_label and label is not None:
+            row.append(label)
+        data.append(row)
+
+    df = pd.DataFrame(data, columns=columns)
+    df.to_csv(output_path, index=False)
+    return output_path
+
+
+def _get_disease_names(config_path: Path) -> list[str]:
+    """Return disease names from config (keys that are lists of questions)."""
+    data = json.loads(config_path.read_text(encoding="utf-8"))
+    return [k for k in data if isinstance(data[k], list)]
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Fetch and preprocess MCQ data from MongoDB into CSV.")
-    p.add_argument("--disease", required=True, help="Disease/testType to filter (e.g., depression, anxiety, adhd).")
+    p.add_argument(
+        "--disease",
+        default=None,
+        help="If set, fetch only this disease and save per-disease CSV. Default: fetch all and save single CSV with one-hot.",
+    )
     p.add_argument(
         "--questions-config",
         type=Path,
@@ -130,34 +174,55 @@ def parse_args() -> argparse.Namespace:
         "--output",
         type=Path,
         default=None,
-        help="Output CSV path. Default: data/processed/mcq/{disease}_dataset.csv",
+        help="Output CSV path. Default: data/processed/mcq/all_diseases_dataset.csv",
     )
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    disease = args.disease.strip().lower()
-
-    question_ids = _load_disease_question_ids(args.questions_config, disease)
+    project_root = Path(__file__).resolve().parents[3]
     client = connect_mongo(args.mongo_uri)
 
-    docs = fetch_mcq_data(client, disease=disease, db_name=args.db, collection_name=args.collection)
-    rows: list[list[int]] = []
+    if args.disease:
+        # Legacy: single disease, per-disease CSV
+        disease = args.disease.strip().lower()
+        question_ids = _load_disease_question_ids(args.questions_config, disease)
+        docs = fetch_mcq_data(client, disease=disease, db_name=args.db, collection_name=args.collection)
+        rows: list[list[int]] = []
+        for doc in docs:
+            vec = build_feature_vector(doc.get("mcqAnswers", []), question_ids)
+            label = 1 if doc.get("isRealPatientData") else 0
+            rows.append(vec + [label])
+        output_path = args.output or project_root / "data" / "processed" / "mcq" / f"{disease}_dataset.csv"
+        saved = save_dataset(rows=rows, disease=disease, question_ids=question_ids, output_path=output_path)
+        total = len(rows)
+    else:
+        # Unified: all diseases, single CSV with one-hot columns
+        disease_names = _get_disease_names(args.questions_config)
+        unified_rows: list[tuple[list[int], str, int]] = []
 
-    for doc in docs:
-        vec = build_feature_vector(doc.get("mcqAnswers", []), question_ids)
+        for disease in disease_names:
+            question_ids = _load_disease_question_ids(args.questions_config, disease)
+            docs = fetch_mcq_data(client, disease=disease, db_name=args.db, collection_name=args.collection)
+            for doc in docs:
+                vec = build_feature_vector(doc.get("mcqAnswers", []), question_ids)
+                label = 1 if doc.get("isRealPatientData") else 0
+                unified_rows.append((vec, disease, label))
 
-        label = 1 if doc.get("isRealPatientData") else 0
+        # All diseases use same q1..q15 layout
+        question_ids = _load_disease_question_ids(args.questions_config, disease_names[0])
+        output_path = args.output or project_root / "data" / "processed" / "mcq" / "all_diseases_dataset.csv"
+        saved = save_unified_dataset(
+            rows=unified_rows,
+            question_ids=question_ids,
+            disease_names=disease_names,
+            output_path=output_path,
+            include_label=True,
+        )
+        total = len(unified_rows)
 
-        rows.append(vec + [label])
-
-    project_root = Path(__file__).resolve().parents[3]
-
-    output_path = args.output or project_root / "data" / "processed" / "mcq" / f"{disease}_dataset.csv"
-    saved = save_dataset(rows=rows, disease=disease, question_ids=question_ids, output_path=output_path)
-
-    print(f"Saved {len(rows)} rows to {saved.as_posix()}")
+    print(f"Saved {total} rows to {saved.as_posix()}")
     return 0
 
 
