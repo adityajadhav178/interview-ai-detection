@@ -1,0 +1,18 @@
+{
+  "disease_to_id": {
+    "depression": 0,
+    "anxiety": 1,
+    "ocd": 2,
+    "adhd": 3
+  },
+  "id_to_disease": {
+    "0": "depression",
+    "1": "anxiety",
+    "2": "ocd",
+    "3": "adhd"
+  },
+  "label_to_str": {
+    "1": "affected / positive",
+    "0": "not affected / negative"
+  }
+}

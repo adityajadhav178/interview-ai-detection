@@ -1,0 +1,395 @@
+{
+  "total_samples": 116,
+  "per_disease_counts": {
+    "depression": 50,
+    "anxiety": 22,
+    "ocd": 22,
+    "adhd": 22
+  },
+  "label_distribution_overall": {
+    "1": 66,
+    "0": 50
+  },
+  "label_counts_per_disease": {
+    "adhd": {
+      "0": 9,
+      "1": 13
+    },
+    "anxiety": {
+      "0": 9,
+      "1": 13
+    },
+    "depression": {
+      "0": 23,
+      "1": 27
+    },
+    "ocd": {
+      "0": 9,
+      "1": 13
+    }
+  },
+  "text_length_per_disease": {
+    "adhd": {
+      "min": 110,
+      "max": 273,
+      "mean": 189.5,
+      "median": 203.0,
+      "std": 61.81
+    },
+    "anxiety": {
+      "min": 96,
+      "max": 225,
+      "mean": 163.09,
+      "median": 183.5,
+      "std": 51.32
+    },
+    "depression": {
+      "min": 85,
+      "max": 231,
+      "mean": 156.74,
+      "median": 170.0,
+      "std": 42.33
+    },
+    "ocd": {
+      "min": 82,
+      "max": 252,
+      "mean": 174.59,
+      "median": 193.5,
+      "std": 62.34
+    }
+  },
+  "vocab_overall": {
+    "total_tokens": 19609,
+    "unique_tokens": 2526
+  },
+  "vocab_richness_per_disease": {
+    "depression": {
+      "total_tokens": 7916,
+      "unique_tokens": 1330,
+      "richness": 0.16801414855987873
+    },
+    "anxiety": {
+      "total_tokens": 3620,
+      "unique_tokens": 941,
+      "richness": 0.2599447513812155
+    },
+    "ocd": {
+      "total_tokens": 3879,
+      "unique_tokens": 968,
+      "richness": 0.24954885279711267
+    },
+    "adhd": {
+      "total_tokens": 4194,
+      "unique_tokens": 1085,
+      "richness": 0.2587029089175012
+    }
+  },
+  "linguistic_feature_correlations": {
+    "cnt_indian_markers": -0.10354345736623247,
+    "cnt_first_person": 0.5555256735479851,
+    "cnt_negative_words": 0.3203372579464579,
+    "cnt_hedging_words": 0.10603135318125764
+  },
+  "inter_disease_tfidf_similarity": {
+    "adhd": {
+      "adhd": 0.9999999999999991,
+      "anxiety": 0.5832293235613394,
+      "depression": 0.6300115745227083,
+      "ocd": 0.5973978659762718
+    },
+    "anxiety": {
+      "adhd": 0.5832293235613394,
+      "anxiety": 0.9999999999999998,
+      "depression": 0.6062951114383688,
+      "ocd": 0.617855400958635
+    },
+    "depression": {
+      "adhd": 0.6300115745227083,
+      "anxiety": 0.6062951114383688,
+      "depression": 1.0000000000000009,
+      "ocd": 0.5937400020760262
+    },
+    "ocd": {
+      "adhd": 0.5973978659762718,
+      "anxiety": 0.617855400958635,
+      "depression": 0.5937400020760262,
+      "ocd": 1.0000000000000009
+    }
+  },
+  "text_length_before_after_cleaning": {
+    "adhd": {
+      "min_before": 110,
+      "max_before": 273,
+      "mean_before": 189.5,
+      "median_before": 203.0,
+      "std_before": 61.81,
+      "min_after": 110,
+      "max_after": 274,
+      "mean_after": 190.05,
+      "median_after": 203.0,
+      "std_after": 61.9
+    },
+    "anxiety": {
+      "min_before": 96,
+      "max_before": 225,
+      "mean_before": 163.09,
+      "median_before": 183.5,
+      "std_before": 51.32,
+      "min_after": 96,
+      "max_after": 225,
+      "mean_after": 163.09,
+      "median_after": 184.0,
+      "std_after": 51.28
+    },
+    "depression": {
+      "min_before": 85,
+      "max_before": 231,
+      "mean_before": 156.74,
+      "median_before": 170.0,
+      "std_before": 42.33,
+      "min_after": 85,
+      "max_after": 231,
+      "mean_after": 157.36,
+      "median_after": 171.0,
+      "std_after": 42.59
+    },
+    "ocd": {
+      "min_before": 82,
+      "max_before": 252,
+      "mean_before": 174.59,
+      "median_before": 193.5,
+      "std_before": 62.34,
+      "min_after": 82,
+      "max_after": 252,
+      "mean_after": 175.05,
+      "median_after": 195.0,
+      "std_after": 62.49
+    }
+  },
+  "split_sizes": {
+    "train": 80,
+    "val": 16,
+    "test": 20
+  },
+  "tokenization_length_stats": {
+    "v1_answers_only": {
+      "min": 107,
+      "max": 331,
+      "mean": 202.00862068965517,
+      "median": 212.0,
+      "pct_exceed": {
+        "128": 88.79310344827587,
+        "256": 18.96551724137931,
+        "384": 0.0,
+        "512": 0.0
+      }
+    },
+    "v2_qa_pairs": {
+      "min": 183,
+      "max": 430,
+      "mean": 285.9741379310345,
+      "median": 288.0,
+      "pct_exceed": {
+        "128": 100.0,
+        "256": 63.793103448275865,
+        "384": 6.896551724137931,
+        "512": 0.0
+      }
+    },
+    "v3_answers_concat": {
+      "min": 103,
+      "max": 327,
+      "mean": 198.00862068965517,
+      "median": 208.0,
+      "pct_exceed": {
+        "128": 83.62068965517241,
+        "256": 17.24137931034483,
+        "384": 0.0,
+        "512": 0.0
+      }
+    }
+  },
+  "recommended_max_length": 512,
+  "metadata": {
+    "description": "Mental health screening dataset for Indian population \u2014 transformer-based text classification",
+    "diseases": [
+      "depression",
+      "anxiety",
+      "ocd",
+      "adhd"
+    ],
+    "label_schema": {
+      "1": "affected / positive",
+      "0": "not affected / negative"
+    },
+    "language_note": "Responses reflect Indian English, cultural references (joint family, UPSC, EMI, BPO, festivals, puja rituals, casteism, dowry, etc.), and socioeconomic diversity across urban, semi-urban and rural populations.",
+    "cultural_contexts_represented": [
+      "UPSC/JEE/NEET/CA exam pressure",
+      "joint family dynamics",
+      "dowry and marriage stigma",
+      "BPO/IT sector work culture",
+      "startup failure",
+      "government job transfer",
+      "parenting anxiety",
+      "financial distress (daily wage/small business)",
+      "COVID bereavement",
+      "religious OCD with Hindu rituals",
+      "postpartum OCD",
+      "contamination OCD",
+      "scrupulosity OCD",
+      "ADHD in students / housewives / professionals / entrepreneurs",
+      "hyperactive and inattentive ADHD presentations",
+      "adult ADHD diagnosis narratives"
+    ],
+    "total_samples": 116,
+    "per_disease_counts": {
+      "depression": {
+        "total": 50,
+        "affected": 27,
+        "not_affected": 23
+      },
+      "anxiety": {
+        "total": 22,
+        "affected": 13,
+        "not_affected": 9
+      },
+      "ocd": {
+        "total": 22,
+        "affected": 13,
+        "not_affected": 9
+      },
+      "adhd": {
+        "total": 22,
+        "affected": 13,
+        "not_affected": 9
+      }
+    },
+    "version": "v4",
+    "merge_notes": "v4: added 10 new samples per disease (DEP_041-050, ANX_013-022, OCD_013-022, ADHD_013-022). Short colloquial answers with umm/hmm expressions simulating real spoken-style responses. Diverse Indian contexts: accounts clerk OCD, contamination OCD, health anxiety, placement anxiety, parenting anxiety, ADHD in nurse/student/caterer."
+  },
+  "split_indices": {
+    "train_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      19,
+      20,
+      22,
+      23,
+      27,
+      28,
+      29,
+      30,
+      33,
+      34,
+      35,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      45,
+      47,
+      50,
+      51,
+      53,
+      54,
+      55,
+      58,
+      59,
+      60,
+      62,
+      63,
+      65,
+      66,
+      68,
+      70,
+      71,
+      72,
+      73,
+      75,
+      76,
+      77,
+      80,
+      81,
+      82,
+      84,
+      85,
+      87,
+      88,
+      90,
+      92,
+      93,
+      94,
+      95,
+      97,
+      98,
+      99,
+      102,
+      103,
+      104,
+      106,
+      107,
+      109,
+      110,
+      112,
+      114,
+      115
+    ],
+    "val_indices": [
+      17,
+      21,
+      24,
+      25,
+      43,
+      46,
+      49,
+      56,
+      57,
+      67,
+      78,
+      79,
+      89,
+      100,
+      101,
+      111
+    ],
+    "test_indices": [
+      9,
+      16,
+      26,
+      31,
+      32,
+      36,
+      44,
+      48,
+      52,
+      61,
+      64,
+      69,
+      74,
+      83,
+      86,
+      91,
+      96,
+      105,
+      108,
+      113
+    ]
+  },
+  "best_text_column": "text_v2"
+}
