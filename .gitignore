@@ -1,5 +1,63 @@
+# Virtual Environment
 .venv/
 venv/
-.env
+env/
+ENV/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# Raw Data & Large Files
+data/raw/
+data/processed/
+data/final_features/
+raw_audio_zip_files/
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Models (Large binaries - use DVC or LFS if needed)
+models/**/*.pth
+models/**/*.joblib
+models/**/*.h5
+models/**/*.pt
+checkpoints/
+
+# Evaluation & Metrics
+evaluation/
+*.png
+*.json
+
+# Logs
+*.log
+logs/
+
+# System backups
+*.bak
+*.backup
+
+# Media Files (Global ignore)
+*.wav
+*.mp3
+*.mp4
+*.avi
