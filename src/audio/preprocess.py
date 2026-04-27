@@ -107,6 +107,7 @@ def _segment_single(
     max_sec: int   = C.SEGMENT_MAX,
     pad_sec: int   = C.SEGMENT_PAD,
     overlap: float = C.SEGMENT_OVERLAP,
+    max_segments_per_file: int | None = C.SEGMENT_MAX_PER_FILE,
 ) -> tuple[int, str]:
     """
     Pad / keep / segment one audio array.
@@ -132,11 +133,16 @@ def _segment_single(
     stride      = int(max_sec * (1 - overlap) * sr)
     idx = 0
     for start in range(0, len(audio) - seg_samples + 1, stride):
+        if max_segments_per_file is not None and idx >= max_segments_per_file:
+            break
         seg = audio[start : start + seg_samples]
         if len(seg) == seg_samples:
             sf.write(str(out_dir / f"{stem}_seg{idx}.wav"), seg, sr)
             idx += 1
 
+    capped = max_segments_per_file is not None and idx >= max_segments_per_file
+    if capped:
+        return idx, f"SPLIT {dur:.1f}s → {idx} segments (capped)"
     return idx, f"SPLIT {dur:.1f}s → {idx} segments"
 
 

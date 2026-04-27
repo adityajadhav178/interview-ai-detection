@@ -60,14 +60,15 @@ def step2_extract_features():
 
 
 def step3_balance():
-    """Step 3 — Balance classes with SMOTE."""
+    """Step 3 — Optional: export a pre-balanced CSV with SMOTE."""
     from .dataset import balance_dataset
 
     print("\n" + "━" * 60)
-    print("  STEP 3 ▸ CLASS BALANCING (SMOTE)")
+    print("  STEP 3 ▸ CLASS BALANCING (OPTIONAL EXPORT)")
     print("━" * 60)
     print(f"  Input  : {C.FEATURES_CSV}")
     print(f"  Output : {C.BALANCED_CSV}")
+    print("  Note   : training now balances after split inside Step 4")
 
     balance_dataset(C.FEATURES_CSV, C.BALANCED_CSV)
 
@@ -79,13 +80,20 @@ def step4_train():
     print("\n" + "━" * 60)
     print("  STEP 4 ▸ MODEL TRAINING & EVALUATION")
     print("━" * 60)
-    print(f"  Input  : {C.BALANCED_CSV}")
+    print(f"  Input  : {C.FEATURES_CSV}")
+    print(f"  Balance: train-only SMOTE = {C.TRAIN_APPLY_SMOTE}")
     print(f"  Models : {C.MODEL_DIR}")
     print(f"  Eval   : {C.EVAL_DIR}")
     print("  Lineup : RF · ExtraTrees · GBDT · XGBoost · LightGBM")
     print("           CatBoost · SVM · Stacking · Voting")
 
-    train_and_evaluate(C.BALANCED_CSV, C.MODEL_DIR, C.EVAL_DIR, tune=True)
+    train_and_evaluate(
+        C.FEATURES_CSV,
+        C.MODEL_DIR,
+        C.EVAL_DIR,
+        tune=True,
+        apply_smote=C.TRAIN_APPLY_SMOTE,
+    )
 
 
 STEPS = {

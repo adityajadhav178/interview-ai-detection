@@ -47,6 +47,7 @@ from sklearn.metrics import (
 
 import xgboost as xgb
 import lightgbm as lgb
+from imblearn.over_sampling import SMOTE
 
 from . import config as C
 
@@ -201,10 +202,11 @@ def _plot_feature_importance(model, feat_names: list, name: str, out_dir: Path):
 # ═════════════════════════════════════════════════════════════
 
 def train_and_evaluate(
-    input_csv:  str | Path = C.BALANCED_CSV,
+    input_csv:  str | Path = C.FEATURES_CSV,
     model_dir:  str | Path = C.MODEL_DIR,
     eval_dir:   str | Path = C.EVAL_DIR,
     tune:       bool       = True,
+    apply_smote: bool      = C.TRAIN_APPLY_SMOTE,
 ) -> dict:
     """
     Full training pipeline:
@@ -223,6 +225,14 @@ def train_and_evaluate(
     y = df["label"]
     feat_names = list(X.columns)
 
+    # Ensure model matrix is finite before scaling/SMOTE.
+    X = X.apply(pd.to_numeric, errors="coerce")
+    X = X.replace([np.inf, -np.inf], np.nan)
+    if X.isna().sum().sum() > 0:
+        X = X.fillna(X.median(numeric_only=True))
+        # Any all-NaN columns remain NaN after median fill; backfill with 0.
+        X = X.fillna(0.0)
+
     # sequential label mapping  (XGBoost/LightGBM need 0..N-1)
     uniq = sorted(y.unique())
     lmap = {v: i for i, v in enumerate(uniq)}
@@ -237,6 +247,30 @@ def train_and_evaluate(
     scaler = StandardScaler()
     X_train_s = scaler.fit_transform(X_train)
     X_test_s  = scaler.transform(X_test)
+
+    X_train_fit = X_train_s
+    y_train_fit = y_train
+    if apply_smote:
+        cls, cnt = np.unique(y_train, return_counts=True)
+        min_class_count = int(cnt.min()) if len(cnt) else 0
+        if min_class_count > 1:
+            k_neighbors = min(C.SMOTE_K_NEIGHBORS, min_class_count - 1)
+            smote = SMOTE(random_state=C.RANDOM_STATE, k_neighbors=k_neighbors)
+            X_train_fit, y_train_fit = smote.fit_resample(X_train_s, y_train)
+
+            print(f"\n  Train balancing: SMOTE enabled (k_neighbors={k_neighbors})")
+            before = pd.Series(y_train).value_counts().sort_index()
+            after = pd.Series(y_train_fit).value_counts().sort_index()
+            print("  Class counts before SMOTE:")
+            for c, n in before.items():
+                print(f"    class {c}: {n}")
+            print("  Class counts after SMOTE:")
+            for c, n in after.items():
+                print(f"    class {c}: {n}")
+        else:
+            print("\n  Train balancing skipped: at least one class has <2 samples in train split")
+    else:
+        print("\n  Train balancing: SMOTE disabled")
 
     joblib.dump(scaler, out / "scaler.joblib")
 
@@ -269,16 +303,16 @@ def train_and_evaluate(
                     n_iter=C.TUNE_ITERS, scoring=C.PRIMARY_METRIC,
                     cv=cv, random_state=C.RANDOM_STATE, n_jobs=-1,
                 )
-                searcher.fit(X_train_s, y_train)
+                searcher.fit(X_train_fit, y_train_fit)
                 model = searcher.best_estimator_
         else:
             # cross-val then full fit
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                model.fit(X_train_s, y_train)
+                model.fit(X_train_fit, y_train_fit)
 
         # ── evaluate ──
-        metrics = _evaluate(model, X_train_s, y_train, X_test_s, y_test,
+        metrics = _evaluate(model, X_train_fit, y_train_fit, X_test_s, y_test,
                             name, feat_names, uniq, cv, ev)
         results[name] = metrics
         fitted[name]  = model
@@ -290,9 +324,9 @@ def train_and_evaluate(
     for name, ens_model in _ensemble_models(fitted).items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            ens_model.fit(X_train_s, y_train)
+            ens_model.fit(X_train_fit, y_train_fit)
 
-        metrics = _evaluate(ens_model, X_train_s, y_train, X_test_s, y_test,
+        metrics = _evaluate(ens_model, X_train_fit, y_train_fit, X_test_s, y_test,
                             name, feat_names, uniq, cv, ev)
         results[name] = metrics
         fitted[name]  = ens_model
