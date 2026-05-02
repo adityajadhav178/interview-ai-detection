@@ -14,7 +14,7 @@ RAW_AUDIO_DIR   = DATA_DIR / "raw" / "audio"
 SEGMENTED_DIR   = DATA_DIR / "raw" / "audio_segmented"
 FEATURES_CSV    = DATA_DIR / "final_features" / "features.csv"
 BALANCED_CSV    = DATA_DIR / "final_features" / "features_balanced.csv"
-MODEL_DIR       = PROJECT_ROOT / "models" / "audio"
+MODEL_DIR       = PROJECT_ROOT / "models" / "audio_model"
 EVAL_DIR        = PROJECT_ROOT / "evaluation" / "audio"
 
 # ── Label Mapping ────────────────────────────────────────────

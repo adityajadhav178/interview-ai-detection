@@ -34,7 +34,7 @@ class AudioPredictor:
         md = Path(model_dir)
 
         scaler_path = md / "scaler.joblib"
-        model_path  = md / "best_model.joblib"
+        model_path  = md / "best_audio_model.joblib"
 
         if not scaler_path.exists() or not model_path.exists():
             raise FileNotFoundError(
@@ -43,9 +43,14 @@ class AudioPredictor:
 
         self.scaler   = joblib.load(scaler_path)
         bundle        = joblib.load(model_path)
-        self.model    = bundle["model"]
-        self.label_map = bundle.get("label_map", {})
-        self.feat_cols = bundle.get("features", [])
+        if isinstance(bundle, dict):
+            self.model    = bundle.get("model", bundle)
+            self.label_map = bundle.get("label_map", {})
+            self.feat_cols = bundle.get("features", [])
+        else:
+            self.model    = bundle
+            self.label_map = {}
+            self.feat_cols = []
 
     # ─────────────────────────────────────────────────────────
 

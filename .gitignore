@@ -37,10 +37,10 @@ raw_audio_zip_files/
 *.rar
 
 # Models (Large binaries - use DVC or LFS if needed)
-models/**/*.pth
-models/**/*.joblib
-models/**/*.h5
-models/**/*.pt
+# models/**/*.pth
+# models/**/*.joblib
+# models/**/*.h5
+# models/**/*.pt
 checkpoints/
 
 # Evaluation & Metrics
